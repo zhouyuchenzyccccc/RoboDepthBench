@@ -1,0 +1,51 @@
+_target_: pfp.backbones.resnet_rgbd.ResnetRGBD
+rgb_model_name: resnet18
+depth_model_name: resnet18
+crop_shape: [76, 76]
+random_crop: true
+use_group_norm: true
+share_rgb_model: false
+share_depth_model: false
+imagenet_norm: true
+depth_imagenet_norm: false
+fusion_mode: concat
+fusion_hidden_dim: null
+fused_feature_dim: null
+rgb_keys: null
+depth_keys: null
+depth_repeat_channels: 3
+shape_meta:
+  obs:
+    img_0:
+      shape: [3, 128, 128]
+      type: rgb
+    img_1:
+      shape: [3, 128, 128]
+      type: rgb
+    img_2:
+      shape: [3, 128, 128]
+      type: rgb
+    img_3:
+      shape: [3, 128, 128]
+      type: rgb
+    img_4:
+      shape: [3, 128, 128]
+      type: rgb
+    depth_0:
+      shape: [1, 128, 128]
+      type: depth
+    depth_1:
+      shape: [1, 128, 128]
+      type: depth
+    depth_2:
+      shape: [1, 128, 128]
+      type: depth
+    depth_3:
+      shape: [1, 128, 128]
+      type: depth
+    depth_4:
+      shape: [1, 128, 128]
+      type: depth
+    robot_state:
+      shape: [10]
+      type: low_dim
