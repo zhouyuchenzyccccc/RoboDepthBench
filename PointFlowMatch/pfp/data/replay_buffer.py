@@ -29,8 +29,8 @@ class RobotReplayBuffer(ReplayBuffer):
         WARNING: decoding (i.e. reading) is broken.
         """
         data_dict = {key: np.stack([x[key] for x in data_list]) for key in data_list[0].keys()}
-        # get the keys starting with 'rgb*'
-        rgb_keys = [key for key in data_dict.keys() if key.startswith("rgb")]
+        # Compress per-camera RGB frames and the stacked image tensor when present.
+        rgb_keys = [key for key in data_dict.keys() if key.startswith("rgb") or key == "images"]
         rgb_shapes = [data_list[0][key].shape for key in rgb_keys]
         chunks = {rgb_keys[i]: (1, *rgb_shapes[i]) for i in range(len(rgb_keys))}
         compressors = {key: self.jpeg_compressor for key in rgb_keys}

@@ -13,4 +13,4 @@ dataset:
 
 model:
   _target_: pfp.policy.fm_policy.FMPolicyImage
-  augment_data: False  # done in backbone
+  augment_data: False  # done in backbone 

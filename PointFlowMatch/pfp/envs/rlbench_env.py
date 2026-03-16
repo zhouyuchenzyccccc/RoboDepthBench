@@ -30,6 +30,14 @@ class RLBenchEnv(BaseEnv):
     The pose is the ttip frame, with x pointing backwards, y pointing left, and z pointing down.
     """
 
+    CAMERA_NAMES = (
+        "right_shoulder",
+        "left_shoulder",
+        "overhead",
+        "front",
+        "wrist",
+    )
+
     def __init__(
         self,
         task_name: str,
@@ -48,7 +56,7 @@ class RLBenchEnv(BaseEnv):
         self.use_pc_color = use_pc_color
         camera_config = CameraConfig(
             rgb=True,
-            depth=False,
+            depth=True,
             mask=False,
             point_cloud=True,
             image_size=(128, 128),
@@ -141,6 +149,78 @@ class RLBenchEnv(BaseEnv):
             obs = self.get_images(obs_rlbench)
         return robot_state, obs
 
+    def _camera_attr(self, camera_name: str, suffix: str) -> str:
+        return f"{camera_name}_{suffix}"
+
+    def get_rgb_dict(self, obs: Observation) -> dict[str, np.ndarray]:
+        return {
+            f"rgb_{camera_name}": np.asarray(
+                getattr(obs, self._camera_attr(camera_name, "rgb")), dtype=np.uint8
+            )
+            for camera_name in self.CAMERA_NAMES
+        }
+
+    def get_depth_dict(self, obs: Observation, prefix: str = "depth_sensor") -> dict[str, np.ndarray]:
+        return {
+            f"{prefix}_{camera_name}": np.asarray(
+                getattr(obs, self._camera_attr(camera_name, "depth")), dtype=np.float32
+            )
+            for camera_name in self.CAMERA_NAMES
+        }
+
+    def get_camera_point_cloud_dict(
+        self, obs: Observation, prefix: str = "point_cloud"
+    ) -> dict[str, np.ndarray]:
+        return {
+            f"{prefix}_{camera_name}": np.asarray(
+                getattr(obs, self._camera_attr(camera_name, "point_cloud")), dtype=np.float32
+            )
+            for camera_name in self.CAMERA_NAMES
+        }
+
+    def get_camera_param_dict(self, obs: Observation) -> dict[str, np.ndarray]:
+        data_dict = {}
+        for camera_name in self.CAMERA_NAMES:
+            intrinsics = getattr(obs, self._camera_attr(camera_name, "camera_intrinsics"), None)
+            extrinsics = getattr(obs, self._camera_attr(camera_name, "camera_extrinsics"), None)
+            if intrinsics is not None:
+                data_dict[f"camera_intrinsics_{camera_name}"] = np.asarray(intrinsics, dtype=np.float32)
+            if extrinsics is not None:
+                data_dict[f"camera_extrinsics_{camera_name}"] = np.asarray(extrinsics, dtype=np.float32)
+        return data_dict
+
+    def get_depths(self, obs: Observation, prefix: str = "depth_sensor") -> np.ndarray:
+        depth_dict = self.get_depth_dict(obs, prefix=prefix)
+        return np.stack([depth_dict[f"{prefix}_{camera_name}"] for camera_name in self.CAMERA_NAMES])
+
+    def get_multimodal_obs(self, obs: Observation) -> dict[str, np.ndarray]:
+        robot_state = self.get_robot_state(obs)
+        rgb_dict = self.get_rgb_dict(obs)
+        depth_dict = self.get_depth_dict(obs, prefix="depth_sensor")
+        point_cloud_dict = self.get_camera_point_cloud_dict(obs, prefix="point_cloud")
+        camera_param_dict = self.get_camera_param_dict(obs)
+
+        images = np.stack([rgb_dict[f"rgb_{camera_name}"] for camera_name in self.CAMERA_NAMES])
+        depth_sensor = np.stack(
+            [depth_dict[f"depth_sensor_{camera_name}"] for camera_name in self.CAMERA_NAMES]
+        )
+        pcd = self.get_pcd(obs)
+        pcd_xyz = np.asarray(pcd.points, dtype=np.float32)
+        pcd_color = np.asarray(pcd.colors, dtype=np.float32)
+
+        data_dict = {
+            "robot_state": robot_state.astype(np.float32),
+            "images": images.astype(np.uint8),
+            "depth_sensor": depth_sensor.astype(np.float32),
+            "pcd_xyz": pcd_xyz,
+            "pcd_color": (pcd_color * 255).astype(np.uint8),
+        }
+        data_dict.update(rgb_dict)
+        data_dict.update(depth_dict)
+        data_dict.update(point_cloud_dict)
+        data_dict.update(camera_param_dict)
+        return data_dict
+
     def get_robot_state(self, obs: Observation) -> np.ndarray:
         ee_position = obs.gripper_matrix[:3, 3]
         ee_rot6d = obs.gripper_matrix[:3, :2].flatten(order="F")
@@ -159,16 +239,8 @@ class RLBenchEnv(BaseEnv):
         return pcd
 
     def get_images(self, obs: Observation) -> np.ndarray:
-        images = np.stack(
-            (
-                obs.right_shoulder_rgb,
-                obs.left_shoulder_rgb,
-                obs.overhead_rgb,
-                obs.front_rgb,
-                obs.wrist_rgb,
-            )
-        )
-        return images
+        rgb_dict = self.get_rgb_dict(obs)
+        return np.stack([rgb_dict[f"rgb_{camera_name}"] for camera_name in self.CAMERA_NAMES])
 
     def vis_step(self, robot_state: np.ndarray, obs: np.ndarray, prediction: np.ndarray = None):
         """

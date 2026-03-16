@@ -34,19 +34,11 @@ def main(cfg: OmegaConf):
         demo = env.task.get_demos(1, live_demos=True)[0]
         observations: list[Observation] = demo._observations
         for obs in observations:
-            robot_state = env.get_robot_state(obs)
-            images = env.get_images(obs)
-            pcd = env.get_pcd(obs)
-            pcd_xyz = np.asarray(pcd.points)
-            pcd_color = np.asarray(pcd.colors)
-            data_history.append(
-                {
-                    "pcd_xyz": pcd_xyz.astype(np.float32),
-                    "pcd_color": (pcd_color * 255).astype(np.uint8),
-                    "robot_state": robot_state.astype(np.float32),
-                    "images": images,
-                }
-            )
+            step_data = env.get_multimodal_obs(obs)
+            robot_state = step_data["robot_state"]
+            pcd_xyz = step_data["pcd_xyz"]
+            pcd_color = step_data["pcd_color"].astype(np.float32) / 255.0
+            data_history.append(step_data)
             env.vis_step(robot_state, np.concatenate((pcd_xyz, pcd_color), axis=-1))
 
         if cfg.save_data:
