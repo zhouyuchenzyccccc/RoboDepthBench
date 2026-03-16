@@ -1,5 +1,6 @@
 import hydra
 import numpy as np
+from pathlib import Path
 from tqdm import tqdm
 from omegaconf import OmegaConf
 from rlbench.backend.observation import Observation
@@ -23,7 +24,10 @@ def main(cfg: OmegaConf):
         RV("pfp_collect_demos")
     env = RLBenchEnv(use_pc_color=True, **cfg.env_config)
     if cfg.save_data:
-        data_path = DATA_DIRS.PFP / cfg.env_config.task_name / cfg.mode
+        if cfg.output_data_dir is None:
+            data_path = DATA_DIRS.PFP / cfg.env_config.task_name / cfg.mode
+        else:
+            data_path = Path(cfg.output_data_dir)
         if data_path.is_dir():
             print(f"ERROR: Data path {data_path} already exists! Exiting...")
             return

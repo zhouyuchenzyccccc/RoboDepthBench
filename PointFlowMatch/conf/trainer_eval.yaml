@@ -1,5 +1,7 @@
 seed: 5678
 log_wandb: False
 run_name: 1716560279-subtle-kestrel  # previous ckpt
+data_root: null  # if set, valid path becomes <data_root>/<task_name>/valid
+valid_data_dir: null  # if set, overrides valid split path
 model:
   num_k_infer: 5

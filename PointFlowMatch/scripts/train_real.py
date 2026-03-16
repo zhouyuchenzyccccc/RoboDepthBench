@@ -1,5 +1,6 @@
 import hydra
 import wandb
+from pathlib import Path
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from composer.trainer import Trainer
@@ -13,6 +14,20 @@ from pfp.data.dataset_pcd import RobotDatasetPcd
 from pfp.data.dataset_images import RobotDatasetImages
 
 
+def _resolve_split_path(
+    split: str,
+    default_root: Path,
+    task_name: str,
+    data_root: str | None,
+    split_path: str | None,
+) -> Path:
+    if split_path is not None:
+        return Path(split_path)
+    if data_root is not None:
+        return Path(data_root) / task_name / split
+    return default_root / task_name / split
+
+
 @hydra.main(version_base=None, config_path="../conf", config_name="train")
 def main(cfg: OmegaConf):
     if not OmegaConf.has_resolver("eval"):
@@ -21,8 +36,20 @@ def main(cfg: OmegaConf):
     print(OmegaConf.to_yaml(cfg))
     set_seeds(cfg.seed)
 
-    data_path_train = DATA_DIRS.PFP_REAL / cfg.task_name / "train"
-    data_path_valid = DATA_DIRS.PFP_REAL / cfg.task_name / "valid"
+    data_path_train = _resolve_split_path(
+        split="train",
+        default_root=DATA_DIRS.PFP_REAL,
+        task_name=cfg.task_name,
+        data_root=cfg.data_root,
+        split_path=cfg.train_data_dir,
+    )
+    data_path_valid = _resolve_split_path(
+        split="valid",
+        default_root=DATA_DIRS.PFP_REAL,
+        task_name=cfg.task_name,
+        data_root=cfg.data_root,
+        split_path=cfg.valid_data_dir,
+    )
     if cfg.obs_mode == "pcd":
         dataset_train = RobotDatasetPcd(data_path_train, **cfg.dataset)
         dataset_valid = RobotDatasetPcd(data_path_valid, **cfg.dataset)

@@ -11,6 +11,9 @@ use_ema: True
 save_each_n_epochs: 500
 obs_mode: pcd  # pcd | rgb
 run_name: null  # set this to continue training from previous ckpt
+data_root: null  # if set, train/valid paths become <data_root>/<task_name>/train|valid
+train_data_dir: null  # if set, overrides train split path
+valid_data_dir: null  # if set, overrides valid split path
 
 
 # env_runner:

@@ -23,8 +23,8 @@ export QT_QPA_PLATFORM_PLUGIN_PATH=$COPPELIASIM_ROOT
 - Install dependencies
 
 ```bash
-conda create --name pfp_env python=3.10
-conda activate pfp_env
+conda create --name rdbench python=3.10 -y
+conda activate rdbench
 bash bash/install_deps.sh
 bash bash/install_rlbench.sh
 
@@ -66,6 +66,25 @@ To train your own policies instead of using the pretrained checkpoints, you firs
 
 ```bash
 bash bash/collect_data.sh
+```
+
+You can also set custom dataset paths directly from the launch command.
+
+Collect demos to a specific output directory:
+
+```bash
+python scripts/collect_demos.py --config-name=collect_demos_train save_data=True env_config.task_name=open_fridge output_data_dir=/path/to/datasets/open_fridge/train
+python scripts/collect_demos.py --config-name=collect_demos_valid save_data=True env_config.task_name=open_fridge output_data_dir=/path/to/datasets/open_fridge/valid
+```
+
+Train with a custom dataset root or split paths:
+
+```bash
+# Option A: root path (expects <root>/<task_name>/train and valid)
+python scripts/train.py task_name=open_fridge data_root=/path/to/datasets +experiment=pointflowmatch_images
+
+# Option B: explicit split paths
+python scripts/train.py train_data_dir=/path/to/datasets/open_fridge/train valid_data_dir=/path/to/datasets/open_fridge/valid +experiment=pointflowmatch_images
 ```
 
 Then, you can train your own policies:

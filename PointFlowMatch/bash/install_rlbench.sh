@@ -9,7 +9,7 @@ if ! [[ -n "${COPPELIASIM_ROOT}" ]]; then
 fi
 
 # Download Coppelia sim if not present
-if ! [[-e $COPPELIASIM_ROOT]]; then
+if ! [[ -e $COPPELIASIM_ROOT ]]; then
     wget https://downloads.coppeliarobotics.com/V4_1_0/CoppeliaSim_Edu_V4_1_0_Ubuntu20_04.tar.xz
     mkdir -p $COPPELIASIM_ROOT && tar -xf CoppeliaSim_Edu_V4_1_0_Ubuntu20_04.tar.xz -C $COPPELIASIM_ROOT --strip-components 1
     rm -rf CoppeliaSim_Edu_V4_1_0_Ubuntu20_04.tar.xz

@@ -2,6 +2,7 @@ mode: valid
 seed: 5678
 num_episodes: 10
 save_data: False
+output_data_dir: null  # if set, save demos directly to this path
 
 
 env_config:

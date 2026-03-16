@@ -1,5 +1,6 @@
 import hydra
 import subprocess
+from pathlib import Path
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 from composer.trainer import Trainer
@@ -8,6 +9,19 @@ from composer.models import ComposerModel
 from pfp import DEVICE, REPO_DIRS, DATA_DIRS, set_seeds
 from pfp.data.dataset_pcd import RobotDatasetPcd
 from pfp.data.dataset_images import RobotDatasetImages
+
+
+def _resolve_valid_path(
+    default_root: Path,
+    task_name: str,
+    data_root: str | None,
+    valid_data_dir: str | None,
+) -> Path:
+    if valid_data_dir is not None:
+        return Path(valid_data_dir)
+    if data_root is not None:
+        return Path(data_root) / task_name / "valid"
+    return default_root / task_name / "valid"
 
 
 @hydra.main(version_base=None, config_path="../conf", config_name="trainer_eval")
@@ -29,7 +43,12 @@ def main(cfg: OmegaConf):
     print(OmegaConf.to_yaml(cfg))
     set_seeds(cfg.seed)
 
-    data_path_valid = DATA_DIRS.PFP / cfg.task_name / "valid"
+    data_path_valid = _resolve_valid_path(
+        default_root=DATA_DIRS.PFP,
+        task_name=cfg.task_name,
+        data_root=cfg.data_root,
+        valid_data_dir=cfg.valid_data_dir,
+    )
     if cfg.obs_mode == "pcd":
         dataset_valid = RobotDatasetPcd(data_path_valid, **cfg.dataset)
     elif cfg.obs_mode == "rgb":
