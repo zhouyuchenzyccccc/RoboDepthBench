@@ -1,3 +1,15 @@
+"""
+
+python scripts/visualize_saved_dataset.py \
+  --data_path /inspire/qb-ilm/project/wuliqifa/public/zyc/dataset/pfp_state_recon/unplug_charger/train \
+  --out_dir /inspire/qb-ilm/project/wuliqifa/public/zyc/dataset/pfp_state_recon/unplug_charger/train/quick_vis \
+  --episode 0 \
+  --start_step 0 \
+  --num_steps 10 \
+  --camera_idx 0 \
+  --pcd_max_points 3000
+
+"""
 import argparse
 from pathlib import Path
 

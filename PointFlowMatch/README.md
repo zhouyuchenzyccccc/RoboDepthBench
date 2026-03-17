@@ -71,6 +71,17 @@ To train your own policies instead of using the pretrained checkpoints, you firs
 bash bash/collect_data.sh
 ```
 
+For servers without GPU OpenGL support, you can use software rendering collection:
+
+```bash
+bash bash/cpu_collect.sh unplug_charger /path/to/datasets/pfp_state_recon
+```
+
+This command saves data to:
+
+- `/path/to/datasets/pfp_state_recon/unplug_charger/train`
+- `/path/to/datasets/pfp_state_recon/unplug_charger/valid`
+
 You can also set custom dataset paths directly from the launch command.
 
 Collect demos to a specific output directory:
@@ -88,6 +99,19 @@ python scripts/train.py task_name=open_fridge data_root=/path/to/datasets +exper
 
 # Option B: explicit split paths
 python scripts/train.py train_data_dir=/path/to/datasets/open_fridge/train valid_data_dir=/path/to/datasets/open_fridge/valid +experiment=pointflowmatch_images
+```
+
+Quickly visualize a subset of a saved zarr dataset:
+
+```bash
+python scripts/visualize_saved_dataset.py \
+	--data_path /path/to/datasets/pfp_state_recon/unplug_charger/train \
+	--out_dir /path/to/datasets/pfp_state_recon/unplug_charger/train/quick_vis \
+	--episode 0 \
+	--start_step 0 \
+	--num_steps 10 \
+	--camera_idx 0 \
+	--pcd_max_points 3000
 ```
 
 Then, you can train your own policies:
