@@ -10,4 +10,4 @@ env_config:
   voxel_size: 0.01
   n_points: 5500
   headless: True
-  vis: True
+  vis: False

@@ -13,3 +13,6 @@ rm -R *.egg-info
 
 # Pypose
 pip install --no-deps pypose
+
+pip install gymnasium
+
